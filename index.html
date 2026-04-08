@@ -88,7 +88,7 @@
             width: 100%;
             padding: 1rem 1.5rem;
             border: 2px solid #e0e0e0;
-            border-radius: 50px;
+            border-radius: 12px;
             font-size: 1rem;
             transition: all 0.3s;
             margin-bottom: 1rem;
@@ -100,33 +100,30 @@
             box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.1);
         }
 
-        .filter-buttons {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-            justify-content: center;
+        .filter-selects {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
         }
 
-        .filter-btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 50px;
+        .filter-select {
+            padding: 0.75rem 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 1rem;
             background: white;
-            color: var(--dark);
-            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        .filter-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.1);
         }
 
-        .filter-btn.active {
-            background: var(--secondary);
-            color: white;
+        .filter-select option {
+            padding: 0.5rem;
         }
 
         /* Activity Grid */
@@ -403,13 +400,19 @@
     <!-- Filters -->
     <section class="filters">
         <input type="text" class="search-box" id="search-input" placeholder="🔍 搜尋活動名稱、地點...">
-        <div class="filter-buttons" id="filter-buttons">
-            <button class="filter-btn active" data-category="all">全部</button>
-            <button class="filter-btn" data-category="音樂、藝術及文化">🎨 音樂藝術</button>
-            <button class="filter-btn" data-category="體育、烹飪及身心靈">⚽ 體育烹飪</button>
-            <button class="filter-btn" data-category="數碼及媒體技能">💻 數碼媒體</button>
-            <button class="filter-btn" data-category="戶外活動">🏕️ 戶外活動</button>
-            <button class="filter-btn" data-category="個人成長及社會服務">🌱 個人成長</button>
+        <div class="filter-selects">
+            <select class="filter-select" id="categoryFilter">
+                <option value="all">📋 全部類別</option>
+                <option value="音樂、藝術及文化">🎨 音樂、藝術及文化</option>
+                <option value="體育、烹飪及身心靈">⚽ 體育、烹飪及身心靈</option>
+                <option value="數碼及媒體技能">💻 數碼及媒體技能</option>
+                <option value="戶外活動">🏕️ 戶外活動</option>
+                <option value="個人成長及社會服務">🌱 個人成長及社會服務</option>
+                <option value="其他">📌 其他</option>
+            </select>
+            <select class="filter-select" id="orgFilter">
+                <option value="all">🏢 全部機構</option>
+            </select>
         </div>
     </section>
 
@@ -444,6 +447,7 @@
         let activities = [];
         let filteredActivities = [];
         let currentCategory = 'all';
+        let currentOrg = 'all';
 
         // Load activities
         async function loadActivities() {
@@ -453,8 +457,9 @@
                 activities = data.activities || [];  // ✅ 取 activities 數組
                 filteredActivities = activities;
                 updateStats();
+                loadFilters();  // ✅ 加載篩選器選項
                 renderActivities();
-                setupFilters();
+                setupFilters();  // ✅ 設置篩選器事件
             } catch (error) {
                 console.error('Error loading activities:', error);
                 document.getElementById('activities-grid').innerHTML = 
@@ -466,10 +471,26 @@
         function updateStats() {
             document.getElementById('total-count').textContent = activities.length;
             document.getElementById('free-count').textContent = 
-                activities.filter(a => a.fee === 0 || a.feeDisplay === '免費').length;
+                activities.filter(a => a.fee === 0 || a.fee === '免費' || a.fee === '').length;
             
             const categories = new Set(activities.map(a => a.category));
             document.getElementById('category-count').textContent = categories.size;
+        }
+
+        // Load filter options
+        function loadFilters() {
+            // Load organization filter
+            const orgFilter = document.getElementById('orgFilter');
+            if (orgFilter) {
+                const organizations = [...new Set(activities.map(a => a.org_name).filter(o => o))];
+                organizations.sort();
+                organizations.forEach(org => {
+                    const option = document.createElement('option');
+                    option.value = org;
+                    option.textContent = org;
+                    orgFilter.appendChild(option);
+                });
+            }
         }
 
         // Render activities
@@ -514,30 +535,43 @@
 
         // Setup filters
         function setupFilters() {
-            // Category filters
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    currentCategory = btn.dataset.category;
+            // Category filter (dropdown)
+            const categoryFilter = document.getElementById('categoryFilter');
+            if (categoryFilter) {
+                categoryFilter.addEventListener('change', (e) => {
+                    currentCategory = e.target.value;
                     filterActivities();
                 });
-            });
+            }
+
+            // Organization filter (dropdown)
+            const orgFilter = document.getElementById('orgFilter');
+            if (orgFilter) {
+                orgFilter.addEventListener('change', (e) => {
+                    currentOrg = e.target.value;
+                    filterActivities();
+                });
+            }
 
             // Search
-            document.getElementById('search-input').addEventListener('input', (e) => {
-                filterActivities(e.target.value);
-            });
+            const searchInput = document.getElementById('search-input');
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    filterActivities(e.target.value);
+                });
+            }
         }
 
         // Filter activities
         function filterActivities(searchText = '') {
             filteredActivities = activities.filter(activity => {
                 const matchCategory = currentCategory === 'all' || activity.category === currentCategory;
+                const matchOrg = currentOrg === 'all' || activity.org_name === currentOrg;
                 const matchSearch = !searchText || 
                     activity.name.toLowerCase().includes(searchText.toLowerCase()) ||
-                    activity.location.toLowerCase().includes(searchText.toLowerCase());
-                return matchCategory && matchSearch;
+                    (activity.location && activity.location.toLowerCase().includes(searchText.toLowerCase())) ||
+                    (activity.org_name && activity.org_name.toLowerCase().includes(searchText.toLowerCase()));
+                return matchCategory && matchOrg && matchSearch;
             });
             renderActivities();
         }
@@ -550,10 +584,10 @@
             document.getElementById('modal-image').src = activity.image;
             document.getElementById('modal-title').textContent = activity.name;
             document.getElementById('modal-category').textContent = activity.category;
-            document.getElementById('modal-fee').textContent = activity.feeDisplay;
+            document.getElementById('modal-fee').textContent = activity.fee || '需查詢';
             document.getElementById('modal-fee').className = 
-                `card-fee ${activity.fee === 0 || activity.feeDisplay === '免費' ? 'free' : ''}`;
-            document.getElementById('modal-source').textContent = activity.source;
+                `card-fee ${activity.fee === 0 || activity.fee === '免費' || activity.fee === '' ? 'free' : ''}`;
+            document.getElementById('modal-source').textContent = activity.org_name || '未知機構';
             
             // 設置來源連結
             const linkEl = document.getElementById('modal-link');
@@ -569,20 +603,20 @@
             details.innerHTML = `
                 <div class="detail-row">
                     <span class="detail-label">地點：</span>
-                    <span class="detail-value">${activity.location}</span>
+                    <span class="detail-value">${activity.location || '需查詢'}</span>
                 </div>
                 <div class="detail-row">
-                    <span class="detail-label">年齡：</span>
-                    <span class="detail-value">${activity.ageRange}</span>
+                    <span class="detail-label">對象：</span>
+                    <span class="detail-value">${activity.target_audience || '需查詢'}</span>
                 </div>
                 <div class="detail-row">
                     <span class="detail-label">時間：</span>
-                    <span class="detail-value">${activity.schedule}</span>
+                    <span class="detail-value">${activity.time || activity.date_start || '需查詢'}</span>
                 </div>
-                ${activity.rawName ? `
+                ${activity.description ? `
                 <div class="detail-row">
                     <span class="detail-label">詳情：</span>
-                    <span class="detail-value">${activity.rawName}</span>
+                    <span class="detail-value">${activity.description}</span>
                 </div>
                 ` : ''}
             `;
