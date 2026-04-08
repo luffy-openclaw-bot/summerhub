@@ -449,7 +449,8 @@
         async function loadActivities() {
             try {
                 const response = await fetch('activities.json');
-                activities = await response.json();
+                const data = await response.json();
+                activities = data.activities || [];  // ✅ 取 activities 數組
                 filteredActivities = activities;
                 updateStats();
                 renderActivities();
