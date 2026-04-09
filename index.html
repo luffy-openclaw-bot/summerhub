@@ -411,6 +411,13 @@
     <section class="filters">
         <input type="text" class="search-box" id="search-input" placeholder="🔍 搜尋活動名稱、地點...">
         <div class="filter-selects">
+            <select class="filter-select" id="monthFilter">
+                <option value="all">📅 全部月份</option>
+                <option value="summer">☀️ 暑期 (6-8 月)</option>
+                <option value="6">6️⃣ 6 月</option>
+                <option value="7">7️⃣ 7 月</option>
+                <option value="8">8️⃣ 8 月</option>
+            </select>
             <select class="filter-select" id="categoryFilter">
                 <option value="all">📋 全部類別</option>
                 <option value="音樂、藝術及文化">🎨 音樂、藝術及文化</option>
@@ -468,6 +475,28 @@
         let currentCategory = 'all';
         let currentOrg = 'all';
         let currentAge = 'all';
+        let currentMonth = 'all';
+        
+        // Parse month from time string
+        function parseMonth(timeStr) {
+            if (!timeStr) return null;
+            const match = timeStr.match(/(\d+)月/);
+            return match ? parseInt(match[1]) : null;
+        }
+        
+        // Check if activity matches month filter
+        function matchMonthFilter(activity, monthFilter) {
+            if (monthFilter === 'all') return true;
+            
+            const month = parseMonth(activity.time);
+            if (!month) return false;
+            
+            if (monthFilter === 'summer') {
+                return month >= 6 && month <= 8;
+            }
+            
+            return month === parseInt(monthFilter);
+        }
         
         // Parse age range from text
         function parseAgeRange(ageText) {
@@ -599,6 +628,15 @@
 
         // Setup filters
         function setupFilters() {
+            // Month filter (dropdown)
+            const monthFilter = document.getElementById('monthFilter');
+            if (monthFilter) {
+                monthFilter.addEventListener('change', (e) => {
+                    currentMonth = e.target.value;
+                    filterActivities();
+                });
+            }
+
             // Category filter (dropdown)
             const categoryFilter = document.getElementById('categoryFilter');
             if (categoryFilter) {
@@ -638,6 +676,7 @@
         // Filter activities
         function filterActivities(searchText = '') {
             filteredActivities = activities.filter(activity => {
+                const matchMonth = matchMonthFilter(activity, currentMonth);
                 const matchCategory = currentCategory === 'all' || activity.category === currentCategory;
                 const matchOrg = currentOrg === 'all' || activity.org_name === currentOrg;
                 const matchAge = matchAgeFilter(activity, currentAge);
@@ -645,7 +684,7 @@
                     activity.name.toLowerCase().includes(searchText.toLowerCase()) ||
                     (activity.location && activity.location.toLowerCase().includes(searchText.toLowerCase())) ||
                     (activity.org_name && activity.org_name.toLowerCase().includes(searchText.toLowerCase()));
-                return matchCategory && matchOrg && matchAge && matchSearch;
+                return matchMonth && matchCategory && matchOrg && matchAge && matchSearch;
             });
             renderActivities();
         }
