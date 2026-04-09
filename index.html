@@ -420,6 +420,15 @@
                 <option value="個人成長及社會服務">🌱 個人成長及社會服務</option>
                 <option value="其他">📌 其他</option>
             </select>
+            <select class="filter-select" id="ageFilter">
+                <option value="all">👶 全部年齡</option>
+                <option value="preschool">🧒 學齡前 (3-5 歲)</option>
+                <option value="primary">🎒 小學生 (6-12 歲)</option>
+                <option value="secondary">📚 中學生 (13-18 歲)</option>
+                <option value="youth">🎓 青少年 (19-24 歲)</option>
+                <option value="adult">👨‍💼 成人 (25 歲+)</option>
+                <option value="all ages">👨‍👩‍👧‍👦 不限年齡</option>
+            </select>
             <select class="filter-select" id="orgFilter">
                 <option value="all">🏢 全部機構</option>
             </select>
@@ -458,6 +467,47 @@
         let filteredActivities = [];
         let currentCategory = 'all';
         let currentOrg = 'all';
+        let currentAge = 'all';
+        
+        // Parse age range from text
+        function parseAgeRange(ageText) {
+            if (!ageText || ageText.trim() === '') return { min: 0, max: 99 };
+            
+            // 提取數字
+            const numbers = ageText.match(/\d+/g);
+            if (!numbers || numbers.length === 0) return { min: 0, max: 99 };
+            
+            const min = parseInt(numbers[0]);
+            const max = numbers.length > 1 ? parseInt(numbers[1]) : min;
+            
+            return { min, max };
+        }
+        
+        // Check if activity matches age filter
+        function matchAgeFilter(activity, ageFilter) {
+            if (ageFilter === 'all') return true;
+            
+            const ageRange = parseAgeRange(activity.target_audience);
+            const minAge = ageRange.min;
+            const maxAge = ageRange.max;
+            
+            switch (ageFilter) {
+                case 'preschool': // 3-5 歲
+                    return minAge <= 5 && maxAge >= 3;
+                case 'primary': // 6-12 歲
+                    return minAge <= 12 && maxAge >= 6;
+                case 'secondary': // 13-18 歲
+                    return minAge <= 18 && maxAge >= 13;
+                case 'youth': // 19-24 歲
+                    return minAge <= 24 && maxAge >= 19;
+                case 'adult': // 25 歲+
+                    return minAge >= 25 || (minAge >= 18 && maxAge >= 35);
+                case 'all ages': // 不限年齡
+                    return minAge === 0 || activity.target_audience === '不限' || activity.target_audience === '';
+                default:
+                    return true;
+            }
+        }
 
         // Load activities
         async function loadActivities() {
@@ -558,6 +608,15 @@
                 });
             }
 
+            // Age filter (dropdown)
+            const ageFilter = document.getElementById('ageFilter');
+            if (ageFilter) {
+                ageFilter.addEventListener('change', (e) => {
+                    currentAge = e.target.value;
+                    filterActivities();
+                });
+            }
+
             // Organization filter (dropdown)
             const orgFilter = document.getElementById('orgFilter');
             if (orgFilter) {
@@ -581,11 +640,12 @@
             filteredActivities = activities.filter(activity => {
                 const matchCategory = currentCategory === 'all' || activity.category === currentCategory;
                 const matchOrg = currentOrg === 'all' || activity.org_name === currentOrg;
+                const matchAge = matchAgeFilter(activity, currentAge);
                 const matchSearch = !searchText || 
                     activity.name.toLowerCase().includes(searchText.toLowerCase()) ||
                     (activity.location && activity.location.toLowerCase().includes(searchText.toLowerCase())) ||
                     (activity.org_name && activity.org_name.toLowerCase().includes(searchText.toLowerCase()));
-                return matchCategory && matchOrg && matchSearch;
+                return matchCategory && matchOrg && matchAge && matchSearch;
             });
             renderActivities();
         }
