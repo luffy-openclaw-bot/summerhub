@@ -652,14 +652,21 @@
 
         // Open activity in new tab
         function openActivity(activityId) {
-            const activity = activities.find(a => a.id === activityId);
-            if (!activity) return;
+            // Convert to number for comparison
+            const id = parseInt(activityId);
+            const activity = activities.find(a => parseInt(a.id) === id);
+            if (!activity) {
+                console.error('Activity not found:', activityId);
+                return;
+            }
 
             // 如果有 URL，開新分頁
             if (activity.url && activity.url.trim() !== '') {
+                console.log('Opening URL:', activity.url);
                 window.open(activity.url, '_blank');
             } else {
                 // 如果無 URL，顯示詳情 Modal
+                console.log('No URL, showing modal');
                 showActivityModal(activity);
             }
         }
