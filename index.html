@@ -143,6 +143,8 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             transition: all 0.3s;
             cursor: pointer;
+            display: flex;
+            flex-direction: column;
         }
 
         .activity-card:hover {
@@ -150,15 +152,23 @@
             box-shadow: 0 20px 40px rgba(0,0,0,0.15);
         }
 
-        .card-image {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            background: #f0f0f0;
+        .card-image-bg {
+            height: 0;
+            padding-bottom: 0;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: all 0.3s;
+        }
+
+        .activity-card.has-image .card-image-bg {
+            height: 180px;
+            padding-bottom: 0;
         }
 
         .card-content {
             padding: 1.5rem;
+            flex: 1;
         }
 
         .card-category {
@@ -502,9 +512,13 @@
                 return;
             }
 
-            grid.innerHTML = filteredActivities.map(activity => `
-                <div class="activity-card" onclick="openActivity('${activity.id}')">
-                    <img class="card-image" src="${activity.image || ''}" alt="${activity.name}" loading="lazy" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 200%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22400%22 height=%22200%22/%3E%3Ctext fill=%22%23999%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22%3E📷 無圖片%3C/text%3E%3C/svg%3E'">
+            grid.innerHTML = filteredActivities.map(activity => {
+                const hasImage = activity.image && activity.image.trim() !== '';
+                const imageStyle = hasImage ? `background-image: url('${activity.image}');` : '';
+                
+                return `
+                <div class="activity-card ${hasImage ? 'has-image' : ''}" onclick="openActivity('${activity.id}')">
+                    <div class="card-image-bg" style="${imageStyle}"></div>
                     <div class="card-content">
                         <span class="card-category">${activity.category}</span>
                         <h3 class="card-title">${activity.name}</h3>
@@ -530,7 +544,7 @@
                         </div>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         // Setup filters
