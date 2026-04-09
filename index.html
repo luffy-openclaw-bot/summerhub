@@ -503,8 +503,8 @@
             }
 
             grid.innerHTML = filteredActivities.map(activity => `
-                <div class="activity-card" onclick="openModal('${activity.id}')">
-                    <img class="card-image" src="${activity.image}" alt="${activity.name}" loading="lazy">
+                <div class="activity-card" onclick="openActivity('${activity.id}')">
+                    <img class="card-image" src="${activity.image || ''}" alt="${activity.name}" loading="lazy" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 200%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22400%22 height=%22200%22/%3E%3Ctext fill=%22%23999%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22%3E📷 無圖片%3C/text%3E%3C/svg%3E'">
                     <div class="card-content">
                         <span class="card-category">${activity.category}</span>
                         <h3 class="card-title">${activity.name}</h3>
@@ -576,12 +576,23 @@
             renderActivities();
         }
 
-        // Modal functions
-        function openModal(activityId) {
+        // Open activity in new tab
+        function openActivity(activityId) {
             const activity = activities.find(a => a.id === activityId);
             if (!activity) return;
 
-            document.getElementById('modal-image').src = activity.image;
+            // 如果有 URL，開新分頁
+            if (activity.url && activity.url.trim() !== '') {
+                window.open(activity.url, '_blank');
+            } else {
+                // 如果無 URL，顯示詳情 Modal
+                showActivityModal(activity);
+            }
+        }
+
+        // Show activity modal (fallback when no URL)
+        function showActivityModal(activity) {
+            document.getElementById('modal-image').src = activity.image || '';
             document.getElementById('modal-title').textContent = activity.name;
             document.getElementById('modal-category').textContent = activity.category;
             document.getElementById('modal-fee').textContent = activity.fee || '需查詢';
@@ -591,7 +602,7 @@
             
             // 設置來源連結
             const linkEl = document.getElementById('modal-link');
-            if (activity.url) {
+            if (activity.url && activity.url.trim() !== '') {
                 linkEl.href = activity.url;
                 linkEl.style.display = 'block';
             } else {
