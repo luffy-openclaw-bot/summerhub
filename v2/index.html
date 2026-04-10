@@ -698,6 +698,7 @@
                 
                 // Price filter logic (fixed)
                 let matchPrice = true;
+                console.log('Price filter value:', currentPrice);
                 if (currentPrice && currentPrice !== 'all') {
                     const fee = activity.fee || '';
                     const feeStr = String(activity.fee_amount || '0').replace(/[^0-9.]/g, '');
