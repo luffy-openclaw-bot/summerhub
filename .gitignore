@@ -1,0 +1,21 @@
+# 敏感文件
+*.sh
+*.py
+*.pem
+*.key
+*secret*
+*token*
+*credentials*
+
+# 數據庫
+*.db
+*.sqlite
+chroma_db/
+
+# 日誌
+*.log
+
+# 截圖
+*.png
+*.jpg
+*.jpeg
