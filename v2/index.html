@@ -484,6 +484,7 @@
         let currentOrg = 'all';
         let currentAge = 'all';
         let currentMonth = 'all';
+        let currentPrice = 'all';  // Price filter
         
         // Parse month from time string
         function parseMonth(timeStr) {
@@ -683,8 +684,8 @@
 
         // Filter activities
         function filterActivities(searchText = '') {
-            const priceFilter = document.getElementById('priceFilter');
-            const currentPrice = priceFilter ? priceFilter.value : 'all';
+            // Use global currentPrice (set by event listener)
+            console.log('Filtering with currentPrice:', currentPrice);
             
             filteredActivities = activities.filter(activity => {
                 const matchMonth = matchMonthFilter(activity, currentMonth);
