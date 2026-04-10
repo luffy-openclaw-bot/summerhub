@@ -696,22 +696,24 @@
                     (activity.location && activity.location.toLowerCase().includes(searchText.toLowerCase())) ||
                     (activity.org_name && activity.org_name.toLowerCase().includes(searchText.toLowerCase()));
                 
-                // Price filter logic
+                // Price filter logic (fixed)
                 let matchPrice = true;
-                if (currentPrice !== 'all') {
+                if (currentPrice && currentPrice !== 'all') {
                     const fee = activity.fee || '';
-                    const feeAmount = parseFloat(String(activity.fee_amount || 0).replace(/[^0-9.]/g, '')) || 0;
+                    const feeStr = String(activity.fee_amount || '0').replace(/[^0-9.]/g, '');
+                    const feeAmount = parseFloat(feeStr) || 0;
+                    const isFree = fee === '免費' || fee === '' || feeAmount === 0;
                     
                     if (currentPrice === 'free') {
-                        matchPrice = (fee === '免費' || fee === '' || feeAmount == 0);
+                        matchPrice = isFree;
                     } else if (currentPrice === 'paid') {
-                        matchPrice = (fee !== '免費' && fee !== '' && feeAmount > 0);
+                        matchPrice = !isFree && (fee !== '' && feeAmount > 0);
                     } else if (currentPrice === 'under100') {
-                        matchPrice = (feeAmount > 0 && feeAmount <= 100);
+                        matchPrice = !isFree && feeAmount > 0 && feeAmount <= 100;
                     } else if (currentPrice === 'under200') {
-                        matchPrice = (feeAmount > 0 && feeAmount <= 200);
+                        matchPrice = !isFree && feeAmount > 0 && feeAmount <= 200;
                     } else if (currentPrice === 'under500') {
-                        matchPrice = (feeAmount > 0 && feeAmount <= 500);
+                        matchPrice = !isFree && feeAmount > 0 && feeAmount <= 500;
                     }
                 }
                 
