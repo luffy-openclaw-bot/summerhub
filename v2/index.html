@@ -484,7 +484,7 @@
         let currentOrg = 'all';
         let currentAge = 'all';
         let currentMonth = 'all';
-        let currentPrice = 'all';  // Price filter
+        let currentPrice = 'all';
         
         // Parse month from time string
         function parseMonth(timeStr) {
@@ -671,6 +671,7 @@
                     currentOrg = e.target.value;
                     filterActivities();
                 });
+            }
 
             // Price filter (dropdown)
             const priceFilter = document.getElementById('priceFilter');
@@ -678,10 +679,6 @@
                 priceFilter.addEventListener('change', (e) => {
                     currentPrice = e.target.value;
                     console.log('Price filter changed to:', currentPrice);
-                    filterActivities();
-                });
-            }
-                    currentOrg = e.target.value;
                     filterActivities();
                 });
             }
@@ -697,8 +694,8 @@
 
         // Filter activities
         function filterActivities(searchText = '') {
-            // Use global currentPrice (set by event listener)
-            console.log('Filtering with currentPrice:', currentPrice);
+            const priceFilter = document.getElementById('priceFilter');
+            const currentPrice = priceFilter ? priceFilter.value : 'all';
             
             filteredActivities = activities.filter(activity => {
                 const matchMonth = matchMonthFilter(activity, currentMonth);
