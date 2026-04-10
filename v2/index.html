@@ -671,6 +671,19 @@
                     currentOrg = e.target.value;
                     filterActivities();
                 });
+
+            // Price filter (dropdown)
+            const priceFilter = document.getElementById('priceFilter');
+            if (priceFilter) {
+                priceFilter.addEventListener('change', (e) => {
+                    currentPrice = e.target.value;
+                    console.log('Price filter changed to:', currentPrice);
+                    filterActivities();
+                });
+            }
+                    currentOrg = e.target.value;
+                    filterActivities();
+                });
             }
 
             // Search
