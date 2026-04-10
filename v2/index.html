@@ -717,13 +717,11 @@
                     const feeAmount = parseFloat(String(activity.fee_amount || 0).replace(/[^0-9.]/g, '')) || 0;
                     
                     if (currentPrice === 'free') {
-                        // Free: fee_amount must be 0 AND fee text must not contain $
-                        const hasPriceInText = fee && fee.includes('$');
-                        matchPrice = (feeAmount == 0 && !hasPriceInText);
+                        // Free: fee_amount is 0 (trust the numeric field)
+                        matchPrice = (feeAmount == 0);
                     } else if (currentPrice === 'paid') {
-                        // Paid: fee_amount > 0 OR fee text contains $
-                        const hasPriceInText = fee && fee.includes('$');
-                        matchPrice = (feeAmount > 0 || hasPriceInText);
+                        // Paid: fee_amount > 0 (trust the numeric field)
+                        matchPrice = (feeAmount > 0);
                     } else if (currentPrice === 'under100') {
                         matchPrice = (feeAmount > 0 && feeAmount <= 100);
                     } else if (currentPrice === 'under200') {
