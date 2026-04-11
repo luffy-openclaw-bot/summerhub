@@ -708,7 +708,10 @@
                 const matchSearch = !searchText || 
                     activity.name.toLowerCase().includes(searchText.toLowerCase()) ||
                     (activity.location && activity.location.toLowerCase().includes(searchText.toLowerCase())) ||
-                    (activity.org_name && activity.org_name.toLowerCase().includes(searchText.toLowerCase()));
+                    (activity.org_name && activity.org_name.toLowerCase().includes(searchText.toLowerCase())) ||
+                    (activity.description && activity.description.toLowerCase().includes(searchText.toLowerCase())) ||
+                    (activity.category && activity.category.toLowerCase().includes(searchText.toLowerCase())) ||
+                    (activity.target_audience && activity.target_audience.toLowerCase().includes(searchText.toLowerCase()));
                 
                 // Price filter logic
                 let matchPrice = true;
